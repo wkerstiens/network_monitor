@@ -3,6 +3,7 @@ import ping from 'ping';
 import {sleep} from "./util/sleep.util";
 import sound from "sound-play";
 import path from 'path';
+import {promises as fs} from 'fs';
 
 (async () : Promise<number> => {
     let errorCode = 0;
@@ -75,6 +76,7 @@ import path from 'path';
     Network is currently ${currentState}
     Network has been up ${(totalUptime/(totalUptime+totalDowntime) * 100).toFixed(2)}% of the time since this session began.
             `);
+            await fs.appendFile(`/Users/wak/network_logs/${moment().format('YYYYMMDD')}.log`, `${start_of_ping},${end_of_ping},${currentState}\r\n`);
             await sleep(2);
         }
 
