@@ -1,6 +1,8 @@
 import moment from 'moment';
 import ping from 'ping';
 import {sleep} from "./util/sleep.util";
+import sound from "sound-play";
+import path from 'path';
 
 (async () : Promise<number> => {
     let errorCode = 0;
@@ -12,12 +14,13 @@ import {sleep} from "./util/sleep.util";
     let startOfLastUpTime : moment.Moment | null = null;
     let endOfLastUpTime : moment.Moment | null = null;
     let currentState : string | null = null;
+    const sound_file = path.join('sounds', 'AirHorn.mp3');
 
     try {
         console.clear();
         while(true) {
             const start_of_ping = moment();
-            const res = await ping.promise.probe('8.8.8.8', { timeout: 1, extra: ['-t', '1'] });
+            const res = await ping.promise.probe('72.19.150.33', { timeout: 1, extra: ['-t', '1'] });
             const end_of_ping = moment();
 
             if(res.alive === true) {
@@ -25,6 +28,11 @@ import {sleep} from "./util/sleep.util";
                     startOfLastUpTime = start_of_ping;
                     endOfLastUpTime = end_of_ping;
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
+                    try {
+                        await sound.play(sound_file, .05);
+                    } catch (error) {
+
+                    }
                 } else {
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
                     endOfLastUpTime = end_of_ping;
@@ -35,6 +43,11 @@ import {sleep} from "./util/sleep.util";
                     startOfLastDownTime = start_of_ping;
                     endOfLastDownTime = end_of_ping;
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
+                    try {
+                        await sound.play(sound_file, .05);
+                    } catch (error) {
+
+                    }
                 } else {
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
                     endOfLastDownTime = end_of_ping;

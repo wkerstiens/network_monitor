@@ -13,9 +13,11 @@
   "repository": "local",
   "dependencies": {
     "moment": "^2.29.1",
-    "ping": "^0.4.0"
+    "ping": "^0.4.0",
+    "sound-play": "^1.1.0"
   },
   "devDependencies": {
-    "@types/ping": "^0.2.0"
+    "@types/ping": "^0.2.0",
+    "@types/node": "^14.14.20"
   }
 }
