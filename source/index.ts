@@ -17,7 +17,7 @@ import {sleep} from "./util/sleep.util";
         console.clear();
         while(true) {
             const start_of_ping = moment();
-            const res = await ping.promise.probe('www.lttrust.com', { timeout: 0, extra: ['-t', '0'] });
+            const res = await ping.promise.probe('8.8.8.8', { timeout: 1, extra: ['-t', '1'] });
             const end_of_ping = moment();
 
             if(res.alive === true) {
