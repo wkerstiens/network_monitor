@@ -1,12 +1,21 @@
 {
   "name": "network-monitor",
   "version": "1.0.0",
-  "description": "",
+  "description": "Network Monitior",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "helperscripts/build.sh"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": "local",
+  "dependencies": {
+    "moment": "^2.29.1",
+    "ping": "^0.4.0"
+  },
+  "devDependencies": {
+    "@types/ping": "^0.2.0"
+  }
 }
