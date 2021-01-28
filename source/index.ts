@@ -24,7 +24,7 @@ import {promises as fs} from 'fs';
         console.clear();
         while(true) {
             const start_of_ping = moment();
-            const res = await ping.promise.probe('72.19.150.33', { timeout: 1, extra: ['-t', '1'] });
+            const res = await ping.promise.probe('72.19.150.33', { timeout: 3, extra: ['-t', '1'] });
             const end_of_ping = moment();
 
             if(res.alive === true) {
