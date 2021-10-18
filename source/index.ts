@@ -15,8 +15,8 @@ import {promises as fs} from 'fs';
     let startOfLastUpTime : moment.Moment | null = null;
     let endOfLastUpTime : moment.Moment | null = null;
     let currentState : string | null = null;
-    let totalDowtimes = 0;
-    let totalUptimes = 0;
+    let totalTimeDown = 0;
+    let totalTimesUp = 0;
     const sound_file = path.join('sounds', 'AirHorn.mp3');
     const sound_level = 0.01;
 
@@ -24,7 +24,7 @@ import {promises as fs} from 'fs';
         console.clear();
         while(true) {
             const start_of_ping = moment();
-            const res = await ping.promise.probe('72.19.150.33', { timeout: 3, extra: ['-t', '1'] });
+            const res = await ping.promise.probe('8.8.8.8', { timeout: 3, extra: ['-t', '1'] });
             const end_of_ping = moment();
 
             if(res.alive === true) {
@@ -33,7 +33,7 @@ import {promises as fs} from 'fs';
                     endOfLastUpTime = end_of_ping;
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
                     sound.play(sound_file, sound_level);
-                    if(currentState === 'down') totalUptimes++;
+                    if(currentState === 'down') totalTimesUp++;
                 } else {
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
                     endOfLastUpTime = end_of_ping;
@@ -45,7 +45,7 @@ import {promises as fs} from 'fs';
                     endOfLastDownTime = end_of_ping;
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
                     sound.play(sound_file, sound_level);
-                    if(currentState === 'up') totalDowtimes++;
+                    if(currentState === 'up') totalTimeDown++;
                 } else {
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
                     endOfLastDownTime = end_of_ping;
@@ -64,8 +64,8 @@ import {promises as fs} from 'fs';
     Total Time Available:    ${(totalUptime / 60 / 60).toFixed(2).padStart(10)} hours      Total Time Unavailable:  ${(totalDowntime / 60 / 60).toFixed(2).padStart(10)} hours
     Total Time Available:    ${(totalUptime / 60 / 60 / 24).toFixed(2).padStart(10)} days       Total Time Unavailable:  ${(totalDowntime / 60 / 60 / 24).toFixed(2).padStart(10)} days
 
-    Total number of times the network has recovered:  ${totalUptimes}
-    Total number of times the network has crashed:    ${totalDowtimes}
+    Total number of times the network has recovered:  ${totalTimesUp}
+    Total number of times the network has crashed:    ${totalTimeDown}
     
     Network is currently ${currentState}
     Network has been up ${(totalUptime/(totalUptime+totalDowntime) * 100).toFixed(2)}% of the time since this session began.
