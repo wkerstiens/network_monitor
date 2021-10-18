@@ -17,7 +17,7 @@
     "sound-play": "^1.1.0"
   },
   "devDependencies": {
-    "@types/ping": "^0.4.0",
-    "@types/node": "^14.14.20"
+    "@types/node": "^14.14.20",
+    "@types/ping": "^0.4.0"
   }
 }
