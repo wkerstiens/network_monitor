@@ -69,6 +69,13 @@ import {promises as fs} from 'fs';
     
     Network is currently ${currentState}
     Network has been up ${(totalUptime/(totalUptime+totalDowntime) * 100).toFixed(2)}% of the time since this session began.
+    
+    Problems, contact Rise Broadband at:
+    
+            Customer Care:  844-816-9149
+        Technical Support:  877-910-6207
+                    Other:  844-411-RISE (7473)
+        
             `);
             await fs.appendFile(`/Users/wak/network_logs/${moment().format('YYYYMMDD')}.log`, `${start_of_ping},${end_of_ping},${currentState}\r\n`);
             await sleep(2);
