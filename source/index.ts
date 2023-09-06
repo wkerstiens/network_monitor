@@ -1,51 +1,67 @@
 import moment from 'moment';
 import ping from 'ping';
-import {sleep} from "./util/sleep.util";
-import sound from "sound-play";
+import {sleep} from './util/sleep.util';
+import sound from 'sound-play';
 import path from 'path';
 import {promises as fs} from 'fs';
+import * as process from 'process';
 
-(async () : Promise<number> => {
+(async (): Promise<number> => {
     let errorCode = 0;
     let totalUptime = 0;
     let totalDowntime = 0;
     const startOfLogging = moment();
-    let startOfLastDownTime : moment.Moment | null = null;
-    let endOfLastDownTime : moment.Moment | null = null;
-    let startOfLastUpTime : moment.Moment | null = null;
-    let endOfLastUpTime : moment.Moment | null = null;
-    let currentState : string | null = null;
+    let startOfLastDownTime: moment.Moment | null = null;
+    let endOfLastDownTime: moment.Moment | null = null;
+    let startOfLastUpTime: moment.Moment | null = null;
+    let endOfLastUpTime: moment.Moment | null = null;
+    let currentState: string | null = null;
     let totalTimeDown = 0;
     let totalTimesUp = 0;
     const sound_file = path.join('sounds', 'AirHorn.mp3');
     const sound_level = 0.01;
+    let soundOn = false;
+    let exitApp = false;
 
     try {
         console.clear();
-        while(true) {
+        process.stdin.setRawMode(true);
+        process.stdin.on('data', keystroke => {
+
+            const key = String.fromCharCode(keystroke[0]);
+            if(key === 's') soundOn = !soundOn;
+            if(key === 'x') {
+                exitApp = !exitApp;
+                process.stdin.setRawMode(false);
+                process.exit(0);
+            }
+        });
+
+        do {
             const start_of_ping = moment();
-            const res = await ping.promise.probe('8.8.8.8', { timeout: 3, extra: ['-t', '1'] });
+            const res = await ping.promise.probe('8.8.8.8', {timeout: 3, extra: ['-t', '1']});
             const end_of_ping = moment();
 
-            if(res.alive === true) {
-                if(currentState === null || currentState === 'down') {
+            if (res.alive) {
+                if (currentState === null || currentState === 'down') {
                     startOfLastUpTime = start_of_ping;
                     endOfLastUpTime = end_of_ping;
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
-                    sound.play(sound_file, sound_level);
-                    if(currentState === 'down') totalTimesUp++;
+                    if(soundOn) sound.play(sound_file, sound_level);
+                    if (currentState === 'down') totalTimesUp++;
                 } else {
                     totalUptime += end_of_ping.diff(endOfLastUpTime, 'seconds');
                     endOfLastUpTime = end_of_ping;
                 }
                 currentState = 'up';
-            } else if(res.alive === false) {
-                if(currentState === null || currentState === 'up') {
+            } else if (!res.alive) {
+            } else {
+                if (currentState === null || currentState === 'up') {
                     startOfLastDownTime = start_of_ping;
                     endOfLastDownTime = end_of_ping;
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
-                    sound.play(sound_file, sound_level);
-                    if(currentState === 'up') totalTimeDown++;
+                    if (soundOn) sound.play(sound_file, sound_level);
+                    if (currentState === 'up') totalTimeDown++;
                 } else {
                     totalDowntime += end_of_ping.diff(endOfLastDownTime, 'seconds');
                     endOfLastDownTime = end_of_ping;
@@ -68,23 +84,23 @@ import {promises as fs} from 'fs';
     Total number of times the network has crashed:    ${totalTimeDown}
     
     Network is currently ${currentState}
-    Network has been up ${(totalUptime/(totalUptime+totalDowntime) * 100).toFixed(2)}% of the time since this session began.
+    Network has been up ${(totalUptime / (totalUptime + totalDowntime) * 100).toFixed(2)}% of the time since this session began.
+    Sound is : ${(soundOn ? 'on' : 'off')}
     
     Problems, contact Rise Broadband at:
     
             Customer Care:  844-816-9149
         Technical Support:  877-910-6207
                     Other:  844-411-RISE (7473)
-        
-            `);
+                    
+        `);
             await fs.appendFile(`/Users/wak/network_logs/${moment().format('YYYYMMDD')}.log`, `${start_of_ping},${end_of_ping},${currentState}\r\n`);
             await sleep(2);
-        }
+        } while (!exitApp);
 
     } catch (exception) {
         errorCode = 1;
         console.log(exception);
-    } finally {
-        return errorCode;
     }
+    return errorCode;
 })();
