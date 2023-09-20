@@ -12,7 +12,7 @@ enum State {
     Unknown
 }
 
-const logPath = '/Users/wak/network_logs';
+const logPath = 'network_logs';
 const sound_file = path.join('sounds', 'AirHorn.mp3');
 const sound_level = 0.01;
 
@@ -110,8 +110,14 @@ const checkNetwork = async (): Promise<void> => {
 };
 
 const log = async (start_of_ping: moment.Moment, end_of_ping: moment.Moment): Promise<void> => {
-    await fs.appendFile(`${logPath}/${moment().format('YYYY-MM-DD')}.log`,
-        `${start_of_ping},${end_of_ping},${currentState}\r\n`);
+    try {
+        const stats = await fs.stat(logPath);
+        if(stats.isDirectory())
+            await fs.appendFile(`${logPath}/${moment().format('YYYY-MM-DD')}.log`,
+                `${start_of_ping},${end_of_ping},${State[currentState].toLowerCase()}\r\n`);
+    } catch (_) {
+        await fs.mkdir(logPath, {recursive: true});
+    }
 };
 
 process.stdin.setRawMode(true);
