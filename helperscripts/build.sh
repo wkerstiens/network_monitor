@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 rm -rf dist/*
-npm install
 tsc
-cd dist
+cd dist || return
 mkdir sounds
 cp ../sounds/* ./sounds/
 cp ../package.json ./package.json
 rm -rf node_modules
-npm install --production
+npm install --omit=dev
