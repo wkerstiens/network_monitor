@@ -6,8 +6,8 @@ import path from 'path';
 
 const sound_file = path.join('sounds', 'AirHorn.mp3');
 const sound_level = 0.01;
-const playSound = () => {
-    sound.play(sound_file, sound_level);
+const playSound = async () => {
+    await sound.play(sound_file, sound_level);
 };
 
 export const initializeApplication = (): ApplicationState => {
@@ -31,17 +31,16 @@ export const initializeApplication = (): ApplicationState => {
     };
 };
 
-export const updateApplicationState = (networkState: NetworkState, applicationState: ApplicationState) => {
+export const updateApplicationState = async (networkState: NetworkState, applicationState: ApplicationState) => {
     const {endOfLastUpTime, endOfLastDownTime} = applicationState;
-
+    const stateChanged = networkState === applicationState.currentState;
     if (networkState === NetworkState.Up)
         if (applicationState.currentState === NetworkState.Unknown || applicationState.currentState === NetworkState.Down) {
             applicationState.startOfLastUpTime = moment();
             applicationState.endOfLastUpTime = moment();
             if (endOfLastUpTime)
                 applicationState.totalUptime += applicationState.endOfLastUpTime.diff(endOfLastUpTime, 'seconds');
-            if (applicationState.soundOn)
-                if (applicationState.currentState === NetworkState.Down) applicationState.totalTimesUp++;
+            if (applicationState.currentState === NetworkState.Down) applicationState.totalTimesUp++;
         } else {
             applicationState.endOfLastUpTime = moment();
             applicationState.totalUptime += applicationState.endOfLastUpTime.diff(endOfLastUpTime, 'seconds');
@@ -52,12 +51,13 @@ export const updateApplicationState = (networkState: NetworkState, applicationSt
             applicationState.endOfLastDownTime = moment();
             if (endOfLastDownTime)
                 applicationState.totalDowntime += applicationState.endOfLastDownTime.diff(endOfLastDownTime, 'seconds');
-            if (applicationState.soundOn) playSound();
             if (applicationState.currentState === NetworkState.Up) applicationState.totalTimesDown++;
         } else {
             applicationState.endOfLastDownTime = moment();
             applicationState.totalUptime += applicationState.endOfLastDownTime.diff(endOfLastDownTime, 'seconds');
         }
+
+    if (stateChanged) await playSound();
 
     applicationState.currentState = networkState;
 };

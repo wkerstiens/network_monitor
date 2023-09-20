@@ -5,16 +5,15 @@ import updateScreen from './managers/screen.manager';
 import {initializeApplication, updateApplicationState} from './managers/application.manager';
 import {configureProcess} from './managers/process.manager';
 
-
 (async (): Promise<number> => {
     const applicationState: ApplicationState = initializeApplication();
     try {
         configureProcess(applicationState);
         console.log('Loading...');
-        updateApplicationState(await checkNetwork(applicationState), applicationState);
+        await updateApplicationState(await checkNetwork(applicationState), applicationState);
         updateScreen(applicationState);
         do {
-            updateApplicationState(await checkNetwork(applicationState), applicationState);
+            await updateApplicationState(await checkNetwork(applicationState), applicationState);
             updateScreen(applicationState);
             await sleep(applicationState.secondsToSleep);
         } while (!applicationState.exitApp);

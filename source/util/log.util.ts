@@ -7,8 +7,6 @@ const logPath = 'network_logs';
 class Logger {
     static loggingEnabled: boolean = false;
 
-
-
     public static logPingEvent = async (start_of_ping: moment.Moment, end_of_ping: moment.Moment, networkState: NetworkState) => {
         if (!Logger.loggingEnabled) return;
         try {
