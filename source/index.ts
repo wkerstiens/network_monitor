@@ -30,7 +30,7 @@ import * as process from 'process';
 
             const key = String.fromCharCode(keystroke[0]);
             if(key === 's') soundOn = !soundOn;
-            if(key === 'x') {
+            if(key === 'x' || key === 'q') {
                 exitApp = !exitApp;
                 process.stdin.setRawMode(false);
                 process.exit(0);
