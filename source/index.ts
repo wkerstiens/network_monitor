@@ -15,16 +15,18 @@ enum State {
 const logPath = '/Users/wak/network_logs';
 const sound_file = path.join('sounds', 'AirHorn.mp3');
 const sound_level = 0.01;
-const startOfLogging = moment();
+
 const pingTimeout = 3;
 const minute = 60;
 const hour = minute * 60;
 const day = hour * 24;
 const addressToPing = '8.8.8.8';
+const dateTimeFormat = 'MM-DD-YYYY HH:mm:ss';
 
 let errorCode = 0;
 let totalUptime = 0;
 let totalDowntime = 0;
+let startOfLogging: moment.Moment | null = null;
 let startOfLastDownTime: moment.Moment | null = null;
 let endOfLastDownTime: moment.Moment | null = null;
 let startOfLastUpTime: moment.Moment | null = null;
@@ -38,35 +40,40 @@ let exitApp = false;
 
 let secondsToSleep = 5;
 
+const formatNumber = (time: number, seconds: number, digits = 2, padding = 10): string => {
+    return (time / seconds).toFixed(digits).toString().padStart(padding);
+};
+
+const formatTime = (time: moment.Moment | null): string => {
+    return time ? time.format(dateTimeFormat) : '<Waiting for data>';
+};
+
 const updateScreen = () => {
     console.clear();
     console.log(`
-    Start of logging:        ${startOfLogging?.format('MM-DD-YYYY HH:mm:ss')}
-
-    Start of Last Uptime:    ${startOfLastUpTime?.format('MM-DD-YYYY HH:mm:ss')}    Start of Last Downtime:  ${startOfLastDownTime?.format('MM-DD-YYYY HH:mm:ss')}
-    End of Last Uptime:      ${endOfLastUpTime?.format('MM-DD-YYYY HH:mm:ss')}    End of Last Downtime:    ${endOfLastDownTime?.format('MM-DD-YYYY HH:mm:ss')}
+    Start of Last Uptime:    ${formatTime(startOfLastUpTime)}    Start of Last Downtime:  ${formatTime(startOfLastDownTime)}
+    End of Last Uptime:      ${formatTime(endOfLastUpTime)}    End of Last Downtime:    ${formatTime(endOfLastDownTime)}
     
-    Total Time Available:    ${totalUptime.toString().padStart(10)} seconds    Total Time Unavailable:  ${totalDowntime.toString().padStart(10)} seconds
-    Total Time Available:    ${(totalUptime / minute).toFixed(2).padStart(10)} minutes    Total Time Unavailable:  ${(totalDowntime / minute).toFixed(2).padStart(10)} minutes
-    Total Time Available:    ${(totalUptime / hour).toFixed(2).padStart(10)} hours      Total Time Unavailable:  ${(totalDowntime / hour).toFixed(2).padStart(10)} hours
-    Total Time Available:    ${(totalUptime / day).toFixed(2).padStart(10)} days       Total Time Unavailable:  ${(totalDowntime / day).toFixed(2).padStart(10)} days
+    Total Time Available:    ${formatNumber(totalUptime, 1, 0)} seconds     Total Time Unavailable:  ${formatNumber(totalDowntime, 1, 0)} seconds
+    Total Time Available:    ${formatNumber(totalUptime, minute)} minutes     Total Time Unavailable:  ${formatNumber(totalDowntime, minute)} minutes
+    Total Time Available:    ${formatNumber(totalUptime, hour)} hours       Total Time Unavailable:  ${formatNumber(totalDowntime, hour)} hours
+    Total Time Available:    ${formatNumber(totalUptime, day)} days        Total Time Unavailable:  ${formatNumber(totalDowntime, day)} days
 
     Total number of times the network has recovered:  ${totalTimesUp}
     Total number of times the network has crashed:    ${totalTimesDown}
     
-    Network is currently ${currentState}
-    Network has been up ${(totalUptime / (totalUptime + totalDowntime) * 100).toFixed(2)}% of the time since this session began.
+    Network is currently ${State[currentState].toLowerCase()}
+    Network has been up ${formatNumber(totalUptime / (totalUptime + totalDowntime) * 100, 1, 2, 0)}% of the time since this session began.
+    
            Sound is : ${(soundOn ? 'on' : 'off')}
-         Logging is : ${(logging ? 'on' : 'off')}
+         Logging is : ${(logging ? 'on' : 'off')}   Logging started began at ${formatTime(startOfLogging)}
     Seconds to sleep: ${secondsToSleep}
     
     Problems, contact Rise Broadband at:
-    
             Customer Care:  844-816-9149
         Technical Support:  877-910-6207
                     Other:  844-411-RISE (7473)
-                    
-        `);
+    `);
 };
 
 const checkNetwork = async (): Promise<void> => {
@@ -111,10 +118,13 @@ process.stdin.setRawMode(true);
 process.stdin.on('data', keystroke => {
     const key = String.fromCharCode(keystroke[0]).toLowerCase();
     if (key === 's') soundOn = !soundOn;
-    else if (key === 'l') logging = !logging;
-    else if (key === '-') secondsToSleep = secondsToSleep > 5 ? secondsToSleep - 5 : secondsToSleep;
+    else if (key === 'l') {
+        logging = !logging;
+        if (logging) startOfLogging = moment();
+        else startOfLogging = null;
+    } else if (key === '-') secondsToSleep = secondsToSleep > 5 ? secondsToSleep - 5 : secondsToSleep;
     else if (key === '+') secondsToSleep = secondsToSleep < 3600 ? secondsToSleep + 5 : secondsToSleep;
-    else if (key === 'x' || key === 'q') {
+    else if (key === 'x' || key === 'q' || keystroke[0] === 3) {
         exitApp = !exitApp;
         process.stdin.setRawMode(false);
         process.exit(0);
