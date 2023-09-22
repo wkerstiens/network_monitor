@@ -33,7 +33,7 @@ export const initializeApplication = (): ApplicationState => {
 
 export const updateApplicationState = async (networkState: NetworkState, applicationState: ApplicationState) => {
     const {endOfLastUpTime, endOfLastDownTime} = applicationState;
-    const stateChanged = networkState === applicationState.currentState;
+    const stateChanged = networkState !== applicationState.currentState;
     if (networkState === NetworkState.Up)
         if (applicationState.currentState === NetworkState.Unknown || applicationState.currentState === NetworkState.Down) {
             applicationState.startOfLastUpTime = moment();
@@ -57,7 +57,7 @@ export const updateApplicationState = async (networkState: NetworkState, applica
             applicationState.totalUptime += applicationState.endOfLastDownTime.diff(endOfLastDownTime, 'seconds');
         }
 
-    if (stateChanged) await playSound();
+    if (stateChanged && applicationState.soundOn) await playSound();
 
     applicationState.currentState = networkState;
 };
